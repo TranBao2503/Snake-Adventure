@@ -4,14 +4,19 @@ import { choice, onlyKeys, queryInteger } from '../core/validation.js';
 import { publicGameRules } from '../config/game-rules.js';
 import { authenticate, authRateLimit, readCookie, sessionCookieOptions } from './middleware.js';
 
-export function createRoutes({ auth, scores, rules, config, now }) {
+export function createRoutes({ auth, scores, rules, config, now, storage = { name: 'memory', check: async () => false } }) {
   const router = Router();
   const signedIn = authenticate(auth, config);
   const rateLimit = authRateLimit({ config, now });
   const cookieOptions = sessionCookieOptions(config);
 
-  router.get('/health', (req, res) => {
-    res.json({ data: { status: 'ok', storage: 'memory', databaseConnected: false } });
+  router.get('/health', async (req, res) => {
+    const databaseConnected = await storage.check();
+    // Memory storage is always "ok"; a persistent store that cannot answer is "degraded" (HTTP 503).
+    const healthy = storage.name === 'memory' || databaseConnected;
+    res.status(healthy ? 200 : 503).json({
+      data: { status: healthy ? 'ok' : 'degraded', storage: storage.name, databaseConnected },
+    });
   });
   router.get('/game-config', (req, res) => res.json({ data: publicGameRules(rules) }));
 

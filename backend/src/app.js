@@ -12,6 +12,7 @@ import { createRoutes } from './http/routes.js';
 export function createApp({
   config = readEnvironment(), rules = gameRules,
   repositories = createMemoryRepositories(), now = () => new Date(),
+  storage = { name: 'memory', check: async () => false },
 } = {}) {
   const app = express();
   const auth = createAuthService({ repositories, config, now });
@@ -20,7 +21,7 @@ export function createApp({
   app.set('query parser', 'simple');
   app.use(requestContext, corsAndOrigin(config), requireJson);
   app.use(express.json({ limit: '64kb', strict: true }));
-  app.use('/api/v1', createRoutes({ auth, scores, rules, config, now }));
+  app.use('/api/v1', createRoutes({ auth, scores, rules, config, now, storage }));
   app.use((req, res, next) => next(new ApiError(404, 'NOT_FOUND', 'API endpoint was not found.')));
   app.use(errorHandler);
   return app;
