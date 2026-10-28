@@ -51,3 +51,12 @@ export function credentials(body, registration = false) {
   }
   return { username, password };
 }
+
+export function playerName(body) {
+  onlyKeys(body, ['username']);
+  const username = string(body.username, 'username', 1, 128).normalize('NFC').trim().replace(/ +/g, ' ');
+  if ([...username].length < 2 || [...username].length > 30 || !/^[\p{L}\p{N}][\p{L}\p{N} _.-]*$/u.test(username)) {
+    invalid('username', 'Use 2 to 30 letters, digits, spaces, underscores, dots, or hyphens. Start with a letter or digit.');
+  }
+  return username;
+}

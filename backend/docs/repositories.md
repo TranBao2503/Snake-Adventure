@@ -16,7 +16,9 @@ User shape:
 { id, username, passwordHash, createdAt }
 ```
 
-`id` is an opaque UUID string. `createdAt` is an ISO 8601 UTC string. `passwordHash` uses the format produced by `core/passwords.js`; preserve it exactly. Services expose only public user fields.
+`id` is an opaque UUID string. `createdAt` is an ISO 8601 UTC string. `passwordHash` is explicitly `null` for the current name-only player flow. Legacy password accounts use the format produced by `core/passwords.js`; preserve that string exactly. Only name-only profiles can be reopened by name without a password. Services expose only public user fields.
+
+Name-only usernames are normalized to Unicode NFC, trimmed, and have repeated ASCII spaces collapsed before reaching the repository. Their display spelling is preserved; lookup and uniqueness remain case insensitive. Concurrent selections of the same name must produce one user identity. Guest play does not create a user or a session: it revokes the previous session and clears its cookie.
 
 ## Sessions
 
@@ -72,6 +74,8 @@ Return `{ items, total }`. Restrict results to the specified user. `mode` may be
 ### leaderboard({ mode, limit })
 
 Return an array of `{ rank, username, score, achievedAt }`. Include one personal record per user for the specified mode. Sort by score descending, achievedAt ascending, userId ascending. Use consecutive ordinal ranks starting at 1.
+
+The score service reads the first 10 leaderboard entries after a successful save and adds `{ limit: 10, qualified, rank }` to the API response. This describes the player's current personal record, not necessarily the score of a lower-scoring new run. Unqualified runs can remain in personal history while the public Top 10 excludes them.
 
 ## Integration point
 

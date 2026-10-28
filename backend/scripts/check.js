@@ -11,7 +11,7 @@ async function files(directory) {
   return results.flat();
 }
 
-const targets = (await Promise.all(['../src/', '../test/', './'].map((path) => files(new URL(path, import.meta.url))))).flat();
+const targets = (await Promise.all(['../src/', '../test/', './', '../../shared/'].map((path) => files(new URL(path, import.meta.url))))).flat();
 for (const target of targets) {
   const result = spawnSync(process.execPath, ['--check', fileURLToPath(target)], { encoding: 'utf8' });
   if (result.status !== 0) {

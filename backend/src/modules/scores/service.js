@@ -100,7 +100,16 @@ export function createScoreService({ repositories, rules, now }) {
       const saved = await repositories.scores.saveAndUpdateRecord({
         ...result, userId, fingerprint, createdAt: now().toISOString(),
       });
-      return { ...saved, run: publicRun(saved.run) };
+      const limit = 10;
+      const [leaderboard, user] = await Promise.all([
+        repositories.scores.leaderboard({ mode: result.mode, limit }),
+        repositories.users.findById(userId),
+      ]);
+      const entry = user && leaderboard.find((item) => item.username === user.username);
+      return {
+        ...saved, run: publicRun(saved.run),
+        leaderboard: { limit, qualified: Boolean(entry), rank: entry?.rank ?? null },
+      };
     },
     async records(userId) {
       const result = await repositories.scores.listRecords(userId);

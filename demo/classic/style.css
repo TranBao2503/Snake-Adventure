@@ -9,6 +9,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; min-width: 280px; }
 button { font: inherit; cursor: pointer; }
 button:focus-visible, canvas:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
@@ -65,6 +66,43 @@ canvas { display: block; width: 100%; height: 100%; border-radius: 4px; touch-ac
 .page-footer { border-top: 1px solid var(--line); margin-top: 25px; padding-top: 18px; display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: #728674; }
 .page-footer span:first-child { letter-spacing: 1.5px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.player-gate { width: min(100%, 540px); margin: 30px auto 48px; padding: 30px; border: 1px solid var(--line); border-radius: 12px; background: #18231c; }
+.player-gate h2 { font-size: 27px; letter-spacing: -1px; margin: 14px 0; }
+.gate-description { color: #b8c6b8; font-size: 14px; line-height: 1.7; margin: 0 0 22px; }
+.player-gate form { display: grid; gap: 10px; }
+.player-gate label, .mode-picker legend { font-size: 13px; color: #d8e4d3; }
+.player-gate input[type="text"] { width: 100%; min-width: 0; font: inherit; border: 1px solid #53684d; border-radius: 5px; padding: 13px; color: #e9eee7; background: #101b14; }
+.player-gate input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.player-gate small { color: var(--muted); font-size: 11px; line-height: 1.6; }
+.player-gate .primary { margin-top: 6px; }
+.mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 14px 0 22px; margin: 0; border: 0; }
+.mode-picker legend { padding: 0; }
+.mode-picker label { display: flex; gap: 8px; padding: 12px; background: #101b14; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.mode-picker label:has(input:checked) { border-color: var(--green); }
+.mode-picker input { accent-color: var(--green); margin: 3px 0 0; }
+.mode-picker small { display: block; margin-top: 4px; }
+.guest-option { display: grid; gap: 8px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+.player-message { color: #efb88c; font-size: 12px; line-height: 1.7; margin: 14px 0 0; }
+.text-button { border: 0; background: transparent; color: var(--green); padding: 4px 0; text-align: left; font-size: 11px; }
+.text-button:hover { text-decoration: underline; }
+.player-card { padding: 15px; border: 1px solid var(--line); border-radius: 8px; background: #18231c; }
+.player-card .section-label { margin-bottom: 10px; }
+.player-card > strong { font-size: 19px; overflow-wrap: anywhere; }
+.player-card p:not(.section-label) { color: var(--muted); font-size: 11px; line-height: 1.6; margin: 8px 0; }
+.score-message { color: #c7d6bc; font-size: 12px; line-height: 1.7; margin: 0; }
+.leaderboard, .hunt-stats { border-top: 1px solid var(--line); padding-top: 16px; }
+.hunt-stats .section-label { margin-bottom: 10px; }
+.hunt-targets { margin: 12px 0 4px; }
+.hunt-targets p { margin: 6px 0; font-size: 12px; color: #c7d6bc; }
+.hunt-stats > .demo-note { margin-top: 12px; }
+.leaderboard-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+.leaderboard-header .section-label { margin: 0; font-size: 9px; letter-spacing: 1px; }
+.leaderboard ol { padding: 0 0 0 24px; margin: 0; font-size: 12px; color: var(--muted); }
+.leaderboard li { padding: 7px 0; }
+.rank-row { display: flex; justify-content: space-between; gap: 12px; color: #d8e4d3; }
+.rank-row span { overflow-wrap: anywhere; }
+.rank-row strong { color: var(--green); white-space: nowrap; }
+.swatch.portal { border: 2px solid #b7a1ff; background: #514374; }
 
 @media (max-width: 720px) {
   .demo { width: calc(100% - 24px); margin-top: 25px; }
@@ -78,6 +116,7 @@ canvas { display: block; width: 100%; height: 100%; border-radius: 4px; touch-ac
   .overlay p { font-size: 12px; margin-bottom: 18px; }
   .overlay h2 { margin-top: 12px; }
   .page-footer { font-size: 9px; }
+  .player-gate { margin: 22px auto 36px; padding: 22px; }
 }
 
 @media (max-width: 360px) {

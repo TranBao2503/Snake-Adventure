@@ -3,10 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Bản demo Classic của Snake Adventure với tường bao quanh.">
-    <title>Snake Adventure — Classic Demo</title>
+    <meta name="description" content="Snake Adventure: chọn tên hoặc chơi khách, thử Classic và The Hunt.">
+    <title>Snake Adventure — Classic & The Hunt</title>
     <link rel="stylesheet" href="./style.css">
     <script src="./engine.js" defer></script>
+    <script src="../../shared/hunt-rules.js" defer></script>
+    <script src="../hunt/levels.js" defer></script>
+    <script src="../hunt/engine.js" defer></script>
+    <script src="./player-session.js" defer></script>
     <script src="./game.js" defer></script>
   </head>
   <body>
@@ -14,13 +18,37 @@
       <header class="header">
         <div>
           <p class="eyebrow"><span class="status-dot"></span> SNAKE ADVENTURE / DEMO</p>
-          <h1>Classic<span class="title-dot">.</span></h1>
-          <p class="subtitle">Ăn mồi, dài thêm. Cẩn thận với tường.</p>
+          <h1><span id="mode-title">Snake Adventure</span><span class="title-dot">.</span></h1>
+          <p class="subtitle" id="mode-description">Chọn tên của bạn và bắt đầu một cuộc săn.</p>
         </div>
-        <span class="mode-tag">MAP 01 · TƯỜNG BAO</span>
+        <span class="mode-tag" id="mode-tag">CLASSIC / THE HUNT</span>
       </header>
 
-      <div class="layout">
+      <section class="player-gate" id="player-gate" aria-labelledby="player-title">
+        <p class="eyebrow">CHÀO MỪNG VÀO SÂN</p>
+        <h2 id="player-title">Bạn muốn chơi với tên nào?</h2>
+        <p class="gate-description">Chọn tên để ghi danh khi điểm đủ cao, hoặc thử sức bằng tài khoản khách.</p>
+        <fieldset class="mode-picker">
+          <legend>Chế độ chơi</legend>
+          <label><input type="radio" name="mode" value="classic" checked><span>Classic<small>Ăn mồi để dài thêm</small></span></label>
+          <label><input type="radio" name="mode" value="hunt"><span>The Hunt<small>Săn hết mồi, tìm cổng ra</small></span></label>
+        </fieldset>
+        <form id="player-form">
+          <label for="player-name">Tên người chơi</label>
+          <input id="player-name" name="username" type="text" autocomplete="nickname" minlength="2" maxlength="30"
+            required placeholder="Ví dụ: Bảo Snake" aria-describedby="name-hint player-message">
+          <small id="name-hint">2–30 ký tự, hỗ trợ tiếng Việt. Không cần mật khẩu.</small>
+          <button class="primary" id="named-play" type="submit">Chơi với tên này <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="guest-option">
+          <button class="secondary" id="guest-play" type="button">Chơi với tư cách khách</button>
+          <small>Khách không được lưu điểm hoặc ghi danh bảng xếp hạng.</small>
+        </div>
+        <p id="player-message" class="player-message" role="status"></p>
+        <button class="text-button" id="cancel-player" type="button" hidden>Quay lại lượt chơi</button>
+      </section>
+
+      <div class="layout" id="game-layout" hidden>
         <section class="arena" aria-label="Bàn chơi Classic">
           <div class="arena-bar">
             <span><span class="status-dot"></span> <span id="status">Sẵn sàng</span></span>
@@ -42,11 +70,29 @@
         </section>
 
         <aside class="sidebar">
+          <section class="player-card" aria-label="Người chơi hiện tại">
+            <p class="section-label">NGƯỜI CHƠI</p>
+            <strong id="player-display">Khách</strong>
+            <p id="player-policy">Điểm của khách không được lưu.</p>
+            <button class="text-button" id="change-player" type="button">Đổi tên / chế độ</button>
+          </section>
           <section class="stats" aria-label="Thông tin lượt chơi">
             <p class="section-label">LƯỢT CHƠI HIỆN TẠI</p>
-            <div class="food-stat"><span>Mồi đã ăn</span><strong id="food-count">0</strong></div>
+            <div class="food-stat"><span id="food-label">Mồi đã ăn</span><strong id="food-count">0</strong></div>
             <div class="stat-row"><span>Chiều dài rắn</span><strong id="length">3</strong></div>
             <div class="stat-row"><span>Tốc độ</span><strong>8 ô / giây</strong></div>
+          </section>
+
+          <section class="hunt-stats" id="hunt-stats" aria-label="Tiến độ The Hunt" hidden>
+            <p class="section-label" id="hunt-level">MÀN 1</p>
+            <strong id="hunt-featured">Chuột</strong>
+            <div class="hunt-targets" id="hunt-targets" aria-label="Mục tiêu từng loại mồi"></div>
+            <div class="stat-row"><span>Mồi còn lại</span><strong id="hunt-remaining">0</strong></div>
+            <div class="stat-row"><span id="hunt-timer-label">Trong mốc thưởng</span><strong id="hunt-timer">01:00</strong></div>
+            <div class="stat-row"><span>Cổng ra</span><strong id="hunt-portal">Chưa mở</strong></div>
+            <div class="stat-row"><span>Điểm mồi của màn</span><strong id="hunt-food-score">2.000</strong></div>
+            <div class="stat-row"><span>Điểm thời gian</span><strong id="hunt-time-score">1.000</strong></div>
+            <p class="demo-note" id="hunt-time-note">60 giây đầu giữ 1.000 điểm, sau đó trừ 10 điểm/giây.</p>
           </section>
 
           <section class="controls" aria-label="Điều khiển">
@@ -65,12 +111,22 @@
             <p><span class="swatch snake"></span>Rắn của bạn</p>
             <p><span class="swatch food"></span>Mồi · ăn để dài thêm</p>
             <p><span class="swatch wall"></span>Tường · chạm là thua</p>
+            <p id="portal-legend" hidden><span class="swatch portal"></span>Cổng · vào để hoàn thành màn</p>
           </section>
-          <p class="demo-note">Bản demo độc lập để thử bản đồ và luật Classic. Chưa tính điểm hoặc lưu thành tích.</p>
+          <p class="score-message" id="score-message" role="status"></p>
+          <section class="leaderboard" aria-labelledby="leaderboard-title">
+            <div class="leaderboard-header">
+              <h2 class="section-label" id="leaderboard-title">BẢNG ĐIỂM · TOP 10</h2>
+              <button class="text-button" id="refresh-leaderboard" type="button">Làm mới</button>
+            </div>
+            <ol id="leaderboard-list"></ol>
+            <p class="demo-note" id="leaderboard-message">Chưa có thành tích.</p>
+          </section>
+          <p class="demo-note" id="demo-note">Hệ số điểm chưa chốt. Số mồi đã ăn không phải điểm chính thức.</p>
           <p id="announcement" class="sr-only" aria-live="polite"></p>
         </aside>
       </div>
-      <footer class="page-footer"><span>CLASSIC DEMO</span><span>Vẽ bằng Canvas · chạy trực tiếp trên trình duyệt</span></footer>
+      <footer class="page-footer"><span>GAMEPLAY PROTOTYPE</span><span>Classic & The Hunt · Canvas 2D</span></footer>
     </main>
   </body>
 </html>

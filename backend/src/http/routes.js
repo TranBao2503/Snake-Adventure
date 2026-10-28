@@ -15,6 +15,18 @@ export function createRoutes({ auth, scores, rules, config, now }) {
   });
   router.get('/game-config', (req, res) => res.json({ data: publicGameRules(rules) }));
 
+  router.post('/auth/player', rateLimit, async (req, res) => {
+    const result = await auth.playAsName(req.body, readCookie(req, config.cookieName));
+    res.cookie(config.cookieName, result.token, { ...cookieOptions, maxAge: config.sessionTtlSeconds * 1000 });
+    res.json({ data: { user: result.user, expiresAt: result.expiresAt, canSaveScores: true } });
+  });
+  router.post('/auth/guest', async (req, res) => {
+    onlyKeys(req.body, []);
+    await auth.logout(readCookie(req, config.cookieName));
+    res.clearCookie(config.cookieName, cookieOptions);
+    res.json({ data: { user: null, canSaveScores: false } });
+  });
+
   router.post('/auth/register', rateLimit, async (req, res) => {
     res.status(201).json({ data: { user: await auth.register(req.body) } });
   });

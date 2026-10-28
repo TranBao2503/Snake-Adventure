@@ -1,19 +1,12 @@
-// Keep undecided coefficients empty. Test fixtures are not gameplay defaults.
+import '../../../shared/hunt-rules.js';
+
+// Classic scoring is undecided; Hunt uses the user-approved shared configuration.
 export const gameRules = {
-  version: 'draft-v1',
+  version: 'hunt-v1',
   classic: {
     pointsPerFood: null,
   },
-  hunt: {
-    snakeLengthPolicy: 'fixed',
-    completionCondition: 'all_prey_caught_then_enter_portal',
-    timeGraceSeconds: 60,
-    timePenaltyRounding: 'whole_seconds',
-    timeScoreFloor: null,
-    newPreyRatio: null,
-    preyCatalog: [],
-    levels: [],
-  },
+  hunt: structuredClone(globalThis.SnakeHuntRules),
 };
 
 export function scoringReady(rules, mode) {

@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { harness, signIn, configuredRules } from './helpers.js';
+import { gameRules } from '../src/config/game-rules.js';
 
-test('health and default configuration expose memory storage and undecided rules', async (t) => {
+test('health reports memory storage and configuration enables Hunt while leaving Classic undecided', async (t) => {
   const api = await harness(t);
   const health = await api.request('/health');
   assert.equal(health.status, 200);
@@ -12,9 +13,11 @@ test('health and default configuration expose memory storage and undecided rules
   assert.equal(config.classic.pointsPerFood, null);
   assert.equal(config.hunt.snakeLengthPolicy, 'fixed');
   assert.equal(config.hunt.timeGraceSeconds, 60);
-  assert.equal(config.hunt.timeScoreFloor, null);
-  assert.deepEqual(config.hunt.levels, []);
-  assert.deepEqual(config.scoringConfigured, { classic: false, hunt: false });
+  assert.equal(config.hunt.timeScoreFloor, 0);
+  assert.equal(config.hunt.levels.length, 2);
+  assert.deepEqual(config.hunt.levels[0].preyCounts, { mouse: 20 });
+  assert.deepEqual(config.hunt.levels[1].preyCounts, { mouse: 5, frog: 15 });
+  assert.deepEqual(config.scoringConfigured, { classic: false, hunt: true });
 });
 
 test('registration, session authentication, and logout work without exposing password hashes', async (t) => {
@@ -130,18 +133,15 @@ test('guest leaderboards are readable and personal endpoints require authenticat
   assert.equal((await api.request('/unknown')).status, 404);
 });
 
-test('default rules reject saving scores without inventing coefficients', async (t) => {
+test('default rules reject Classic scores while its coefficient remains undecided', async (t) => {
   const api = await harness(t);
   const { cookie } = await signIn(api);
-  for (const mode of ['classic', 'hunt']) {
-    const response = await api.request('/scores', {
-      method: 'POST', cookie,
-      body: { runId: randomUUID(), mode, rulesVersion: 'draft-v1', activeDurationMs: 1000, endReason: 'collision',
-        ...(mode === 'classic' ? { foodEaten: 1 } : { levelResults: [] }) },
-    });
-    assert.equal(response.status, 409);
-    assert.equal(response.body.error.code, 'SCORING_NOT_CONFIGURED');
-  }
+  const response = await api.request('/scores', {
+    method: 'POST', cookie,
+    body: { runId: randomUUID(), mode: 'classic', rulesVersion: gameRules.version, activeDurationMs: 1000, endReason: 'collision', foodEaten: 1 },
+  });
+  assert.equal(response.status, 409);
+  assert.equal(response.body.error.code, 'SCORING_NOT_CONFIGURED');
   assert.deepEqual((await api.request('/me/records', { cookie })).body.data, { classic: null, hunt: null });
 });
 
